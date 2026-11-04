@@ -1,0 +1,248 @@
+### Pruebas de la API. Para probar la nube, cambia Host por la URL publicada.
+### Parte de los datos recién cargados por TallerMecanicoDB.sql.
+@Host = http://localhost:5094
+
+############ CLIENTES ############
+
+### 200 - Listar clientes
+GET {{Host}}/api/clientes
+
+### 200 - Obtener cliente
+GET {{Host}}/api/clientes/1
+
+### 404 - Cliente inexistente
+GET {{Host}}/api/clientes/999
+
+### 200 - Ruta anidada: vehículos del cliente
+GET {{Host}}/api/clientes/1/vehiculos
+
+### 404 - Ruta anidada con cliente inexistente
+GET {{Host}}/api/clientes/999/vehiculos
+
+### 201 - Crear cliente
+# @name nuevoCliente
+POST {{Host}}/api/clientes
+Content-Type: application/json
+
+{
+  "nombres": "Pedro Pablo Rojas Silva",
+  "dni": "40123456",
+  "telefono": "945612378",
+  "correo": "pedro.rojas@correo.pe"
+}
+
+### 400 - Datos inválidos (sin nombres y DNI corto)
+POST {{Host}}/api/clientes
+Content-Type: application/json
+
+{
+  "dni": "123",
+  "telefono": "945612378"
+}
+
+### 409 - Regla de negocio: DNI repetido
+POST {{Host}}/api/clientes
+Content-Type: application/json
+
+{
+  "nombres": "Otra Persona",
+  "dni": "45781236",
+  "telefono": "900000000"
+}
+
+### 204 - Actualizar cliente
+PUT {{Host}}/api/clientes/{{nuevoCliente.response.body.id}}
+Content-Type: application/json
+
+{
+  "id": {{nuevoCliente.response.body.id}},
+  "nombres": "Pedro Pablo Rojas Silva",
+  "dni": "40123456",
+  "telefono": "999888777",
+  "correo": "pedro.rojas@correo.pe"
+}
+
+### 400 - Id de la ruta distinto del cuerpo
+PUT {{Host}}/api/clientes/1
+Content-Type: application/json
+
+{
+  "id": 2,
+  "nombres": "Ana Lucía Torres Ramos",
+  "dni": "45781236",
+  "telefono": "987654321"
+}
+
+### 404 - Actualizar cliente inexistente
+PUT {{Host}}/api/clientes/999
+Content-Type: application/json
+
+{
+  "id": 999,
+  "nombres": "Nadie",
+  "dni": "11111111",
+  "telefono": "900000000"
+}
+
+### 409 - Regla de negocio: DNI de otro cliente
+PUT {{Host}}/api/clientes/1
+Content-Type: application/json
+
+{
+  "id": 1,
+  "nombres": "Ana Lucía Torres Ramos",
+  "dni": "70125489",
+  "telefono": "987654321"
+}
+
+### 409 - Regla de negocio: cliente con vehículos
+DELETE {{Host}}/api/clientes/1
+
+### 404 - Eliminar cliente inexistente
+DELETE {{Host}}/api/clientes/999
+
+### 204 - Eliminar cliente sin vehículos
+DELETE {{Host}}/api/clientes/{{nuevoCliente.response.body.id}}
+
+############ VEHÍCULOS ############
+
+### 200 - Listar vehículos
+GET {{Host}}/api/vehiculos
+
+### 200 - Filtros por query string
+GET {{Host}}/api/vehiculos?marca=Toyota&anioDesde=2020&anioHasta=2022
+
+### 200 - Obtener vehículo
+GET {{Host}}/api/vehiculos/1
+
+### 404 - Vehículo inexistente
+GET {{Host}}/api/vehiculos/999
+
+### 201 - Crear vehículo (solo se envía la clave foránea)
+# @name nuevoVehiculo
+POST {{Host}}/api/vehiculos
+Content-Type: application/json
+
+{
+  "placa": "XYZ-999",
+  "marca": "Mazda",
+  "modelo": "CX-5",
+  "anio": 2023,
+  "kilometraje": 12000,
+  "clienteId": 5
+}
+
+### 400 - Datos inválidos (año fuera de rango)
+POST {{Host}}/api/vehiculos
+Content-Type: application/json
+
+{
+  "placa": "XYZ-998",
+  "marca": "Mazda",
+  "modelo": "CX-5",
+  "anio": 1900,
+  "kilometraje": 12000,
+  "clienteId": 5
+}
+
+### 400 - Clave foránea inexistente
+POST {{Host}}/api/vehiculos
+Content-Type: application/json
+
+{
+  "placa": "XYZ-997",
+  "marca": "Mazda",
+  "modelo": "CX-5",
+  "anio": 2023,
+  "kilometraje": 12000,
+  "clienteId": 999
+}
+
+### 409 - Regla de negocio: placa repetida
+POST {{Host}}/api/vehiculos
+Content-Type: application/json
+
+{
+  "placa": "ABC-123",
+  "marca": "Mazda",
+  "modelo": "CX-5",
+  "anio": 2023,
+  "kilometraje": 12000,
+  "clienteId": 5
+}
+
+### 204 - Actualizar vehículo
+PUT {{Host}}/api/vehiculos/{{nuevoVehiculo.response.body.id}}
+Content-Type: application/json
+
+{
+  "id": {{nuevoVehiculo.response.body.id}},
+  "placa": "XYZ-999",
+  "marca": "Mazda",
+  "modelo": "CX-5",
+  "anio": 2023,
+  "kilometraje": 15000,
+  "clienteId": 5
+}
+
+### 400 - Id de la ruta distinto del cuerpo
+PUT {{Host}}/api/vehiculos/1
+Content-Type: application/json
+
+{
+  "id": 2,
+  "placa": "ABC-123",
+  "marca": "Toyota",
+  "modelo": "Corolla",
+  "anio": 2018,
+  "kilometraje": 85000,
+  "clienteId": 1
+}
+
+### 400 - Clave foránea inexistente
+PUT {{Host}}/api/vehiculos/1
+Content-Type: application/json
+
+{
+  "id": 1,
+  "placa": "ABC-123",
+  "marca": "Toyota",
+  "modelo": "Corolla",
+  "anio": 2018,
+  "kilometraje": 85000,
+  "clienteId": 999
+}
+
+### 404 - Actualizar vehículo inexistente
+PUT {{Host}}/api/vehiculos/999
+Content-Type: application/json
+
+{
+  "id": 999,
+  "placa": "NOP-000",
+  "marca": "Toyota",
+  "modelo": "Corolla",
+  "anio": 2018,
+  "kilometraje": 85000,
+  "clienteId": 1
+}
+
+### 409 - Regla de negocio: placa de otro vehículo
+PUT {{Host}}/api/vehiculos/1
+Content-Type: application/json
+
+{
+  "id": 1,
+  "placa": "BCD-234",
+  "marca": "Toyota",
+  "modelo": "Corolla",
+  "anio": 2018,
+  "kilometraje": 85000,
+  "clienteId": 1
+}
+
+### 404 - Eliminar vehículo inexistente
+DELETE {{Host}}/api/vehiculos/999
+
+### 204 - Eliminar vehículo
+DELETE {{Host}}/api/vehiculos/{{nuevoVehiculo.response.body.id}}
