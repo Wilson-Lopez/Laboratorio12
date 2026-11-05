@@ -86,12 +86,18 @@ var app = builder.Build();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 
+// Antes que la página y Swagger: si cargaran por HTTP y sus peticiones se redirigieran a HTTPS,
+// el navegador las bloquearía por ser de otro origen
+app.UseHttpsRedirection();
+
+// Página del panel, en la carpeta wwwroot
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 // Swagger queda visible también en la API publicada, no solo en Development
 app.MapOpenApi();
 app.UseSwaggerUI(options =>
     options.SwaggerEndpoint("/openapi/v1.json", "Taller Mecánico API v1"));
-
-app.UseHttpsRedirection();
 
 app.UseCors();
 

@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="Panel de gestión de clientes y vehículos del taller mecánico.">
+  <title>Taller Mecánico · Panel de gestión</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23c2410c'/%3E%3Cpath d='M20.3 9.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.1-3.1a7 7 0 0 1-9.3 9.3l-6.2 6.2a2.5 2.5 0 0 1-3.5-3.5l6.2-6.2a7 7 0 0 1 9.3-9.3z' fill='none' stroke='%23fff' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="estilos.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <svg class="sprite" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="i-llave" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></symbol>
+    <symbol id="i-mas" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-editar" viewBox="0 0 24 24"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></symbol>
+    <symbol id="i-eliminar" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+    <symbol id="i-buscar" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></symbol>
+    <symbol id="i-cerrar" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+    <symbol id="i-externo" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></symbol>
+    <symbol id="i-alerta" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></symbol>
+    <symbol id="i-listo" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></symbol>
+  </svg>
+
+  <header class="cabecera">
+    <div class="cabecera__fila">
+      <a class="marca" href="#clientes">
+        <span class="marca__icono"><svg class="icono" aria-hidden="true"><use href="#i-llave"/></svg></span>
+        <span class="marca__texto">
+          <strong>Taller Mecánico</strong>
+          <small>Panel de gestión</small>
+        </span>
+      </a>
+      <div class="cabecera__acciones">
+        <span class="estado-api" id="estado-api" data-estado="cargando" role="status">Conectando…</span>
+        <a class="enlace-api" href="/swagger" target="_blank" rel="noopener">
+          Swagger
+          <svg class="icono" aria-hidden="true"><use href="#i-externo"/></svg>
+        </a>
+      </div>
+    </div>
+    <nav class="pestanas" aria-label="Secciones">
+      <a class="pestana" href="#clientes" data-seccion="clientes">Clientes <span class="contador" id="conteo-clientes">–</span></a>
+      <a class="pestana" href="#vehiculos" data-seccion="vehiculos">Vehículos <span class="contador" id="conteo-vehiculos">–</span></a>
+    </nav>
+  </header>
+
+  <main class="principal">
+    <section id="seccion-clientes" aria-labelledby="titulo-clientes">
+      <div class="encabezado">
+        <div>
+          <h1 id="titulo-clientes">Clientes</h1>
+          <p>Propietarios de los vehículos que atiende el taller.</p>
+        </div>
+        <button class="boton boton--primario" id="nuevo-cliente" type="button">
+          <svg class="icono" aria-hidden="true"><use href="#i-mas"/></svg>
+          Nuevo cliente
+        </button>
+      </div>
+
+      <div class="panel">
+        <div class="filtros">
+          <div class="busqueda">
+            <svg class="icono" aria-hidden="true"><use href="#i-buscar"/></svg>
+            <input id="buscar-cliente" type="search" placeholder="Buscar por nombre o DNI" aria-label="Buscar por nombre o DNI" autocomplete="off">
+          </div>
+        </div>
+        <div class="tabla-contenedor">
+          <table class="tabla">
+            <thead>
+              <tr>
+                <th scope="col">Cliente</th>
+                <th scope="col">DNI</th>
+                <th scope="col">Teléfono</th>
+                <th scope="col">Vehículos</th>
+                <th scope="col"><span class="solo-lector">Acciones</span></th>
+              </tr>
+            </thead>
+            <tbody id="filas-clientes"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="seccion-vehiculos" aria-labelledby="titulo-vehiculos" hidden>
+      <div class="encabezado">
+        <div>
+          <h1 id="titulo-vehiculos">Vehículos</h1>
+          <p>Unidades registradas y su propietario.</p>
+        </div>
+        <button class="boton boton--primario" id="nuevo-vehiculo" type="button">
+          <svg class="icono" aria-hidden="true"><use href="#i-mas"/></svg>
+          Nuevo vehículo
+        </button>
+      </div>
+
+      <div class="panel">
+        <form class="filtros filtros--rejilla" id="filtros-vehiculos" autocomplete="off">
+          <label class="filtro">Placa
+            <input id="filtro-placa" name="placa" type="search" placeholder="ABC-123" maxlength="10">
+          </label>
+          <label class="filtro">Marca
+            <input id="filtro-marca" name="marca" type="search" placeholder="Toyota" maxlength="50">
+          </label>
+          <label class="filtro">Año desde
+            <input id="filtro-anio-desde" name="anioDesde" type="number" placeholder="1980" min="1980" max="2030">
+          </label>
+          <label class="filtro">Año hasta
+            <input id="filtro-anio-hasta" name="anioHasta" type="number" placeholder="2030" min="1980" max="2030">
+          </label>
+          <label class="filtro">Cliente
+            <select id="filtro-cliente" name="clienteId">
+              <option value="">Todos</option>
+            </select>
+          </label>
+          <button class="boton boton--secundario" id="limpiar-filtros" type="reset">Limpiar</button>
+        </form>
+        <div class="tabla-contenedor">
+          <table class="tabla">
+            <thead>
+              <tr>
+                <th scope="col">Placa</th>
+                <th scope="col">Vehículo</th>
+                <th scope="col" class="numero">Año</th>
+                <th scope="col" class="numero">Kilometraje</th>
+                <th scope="col">Propietario</th>
+                <th scope="col"><span class="solo-lector">Acciones</span></th>
+              </tr>
+            </thead>
+            <tbody id="filas-vehiculos"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <dialog class="dialogo" id="dialogo-cliente" aria-labelledby="titulo-form-cliente">
+    <form id="form-cliente" novalidate>
+      <header class="dialogo__cabecera">
+        <h2 id="titulo-form-cliente">Nuevo cliente</h2>
+        <button class="boton-icono" type="button" data-cerrar aria-label="Cerrar">
+          <svg class="icono" aria-hidden="true"><use href="#i-cerrar"/></svg>
+        </button>
+      </header>
+      <div class="dialogo__cuerpo">
+        <div class="aviso" role="alert" hidden></div>
+        <div class="rejilla-campos">
+          <div class="campo campo--ancho">
+            <label for="cliente-nombres">Nombres y apellidos</label>
+            <input id="cliente-nombres" name="nombres" maxlength="100" autocomplete="off">
+          </div>
+          <div class="campo">
+            <label for="cliente-dni">DNI</label>
+            <input id="cliente-dni" name="dni" maxlength="8" inputmode="numeric" autocomplete="off">
+          </div>
+          <div class="campo">
+            <label for="cliente-telefono">Teléfono</label>
+            <input id="cliente-telefono" name="telefono" type="tel" maxlength="15" autocomplete="off">
+          </div>
+          <div class="campo campo--ancho">
+            <label for="cliente-correo">Correo <span class="opcional">Opcional</span></label>
+            <input id="cliente-correo" name="correo" type="email" maxlength="100" autocomplete="off">
+          </div>
+        </div>
+      </div>
+      <footer class="dialogo__pie">
+        <button class="boton boton--secundario" type="button" data-cerrar>Cancelar</button>
+        <button class="boton boton--primario" type="submit">Guardar</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <dialog class="dialogo" id="dialogo-vehiculo" aria-labelledby="titulo-form-vehiculo">
+    <form id="form-vehiculo" novalidate>
+      <header class="dialogo__cabecera">
+        <h2 id="titulo-form-vehiculo">Nuevo vehículo</h2>
+        <button class="boton-icono" type="button" data-cerrar aria-label="Cerrar">
+          <svg class="icono" aria-hidden="true"><use href="#i-cerrar"/></svg>
+        </button>
+      </header>
+      <div class="dialogo__cuerpo">
+        <div class="aviso" role="alert" hidden></div>
+        <div class="rejilla-campos">
+          <div class="campo campo--ancho">
+            <label for="vehiculo-cliente">Propietario</label>
+            <select id="vehiculo-cliente" name="clienteId">
+              <option value="">Selecciona un cliente</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label for="vehiculo-placa">Placa</label>
+            <input id="vehiculo-placa" name="placa" maxlength="10" autocomplete="off">
+          </div>
+          <div class="campo">
+            <label for="vehiculo-marca">Marca</label>
+            <input id="vehiculo-marca" name="marca" maxlength="50" autocomplete="off">
+          </div>
+          <div class="campo">
+            <label for="vehiculo-modelo">Modelo</label>
+            <input id="vehiculo-modelo" name="modelo" maxlength="50" autocomplete="off">
+          </div>
+          <div class="campo">
+            <label for="vehiculo-anio">Año</label>
+            <input id="vehiculo-anio" name="anio" type="number" autocomplete="off">
+          </div>
+          <div class="campo campo--ancho">
+            <label for="vehiculo-kilometraje">Kilometraje</label>
+            <input id="vehiculo-kilometraje" name="kilometraje" type="number" autocomplete="off">
+          </div>
+        </div>
+      </div>
+      <footer class="dialogo__pie">
+        <button class="boton boton--secundario" type="button" data-cerrar>Cancelar</button>
+        <button class="boton boton--primario" type="submit">Guardar</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <dialog class="dialogo" id="dialogo-detalle" aria-labelledby="titulo-detalle">
+    <header class="dialogo__cabecera">
+      <div>
+        <h2 id="titulo-detalle">Vehículos</h2>
+        <p class="dialogo__subtitulo" id="subtitulo-detalle"></p>
+      </div>
+      <button class="boton-icono" type="button" data-cerrar aria-label="Cerrar">
+        <svg class="icono" aria-hidden="true"><use href="#i-cerrar"/></svg>
+      </button>
+    </header>
+    <div class="dialogo__cuerpo">
+      <ul class="lista-vehiculos" id="lista-detalle"></ul>
+    </div>
+    <footer class="dialogo__pie">
+      <button class="boton boton--secundario" type="button" data-cerrar>Cerrar</button>
+      <button class="boton boton--primario" id="detalle-agregar" type="button">
+        <svg class="icono" aria-hidden="true"><use href="#i-mas"/></svg>
+        Agregar vehículo
+      </button>
+    </footer>
+  </dialog>
+
+  <dialog class="dialogo dialogo--pequeno" id="dialogo-confirmar" aria-labelledby="titulo-confirmar">
+    <header class="dialogo__cabecera">
+      <h2 id="titulo-confirmar">Confirmar eliminación</h2>
+      <button class="boton-icono" type="button" data-cerrar aria-label="Cerrar">
+        <svg class="icono" aria-hidden="true"><use href="#i-cerrar"/></svg>
+      </button>
+    </header>
+    <div class="dialogo__cuerpo">
+      <div class="aviso" role="alert" hidden></div>
+      <div id="detalle-confirmar">
+        <p id="texto-confirmar"></p>
+        <p class="texto-suave">Esta acción no se puede deshacer.</p>
+      </div>
+    </div>
+    <footer class="dialogo__pie">
+      <button class="boton boton--secundario" id="cancelar-eliminar" type="button" data-cerrar>Cancelar</button>
+      <button class="boton boton--peligro" id="confirmar-eliminar" type="button">Eliminar</button>
+    </footer>
+  </dialog>
+
+  <div class="avisos" id="avisos" role="status" aria-live="polite"></div>
+</body>
+</html>
