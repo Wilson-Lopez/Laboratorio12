@@ -5,7 +5,52 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    // El [Required] implícito del cuerpo tiene su mensaje en inglés; las entidades ya declaran los suyos
+    options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
+
+    // Mensajes de enlace de datos en español
+    var mensajes = options.ModelBindingMessageProvider;
+    mensajes.SetNonPropertyAttemptedValueIsInvalidAccessor(valor => $"El valor '{valor}' no es válido.");
+    mensajes.SetMissingRequestBodyRequiredValueAccessor(() => "El cuerpo de la petición es obligatorio.");
+})
+.AddJsonOptions(options =>
+    // No devuelve el detalle en inglés de System.Text.Json cuando el JSON es inválido
+    options.AllowInputFormatterExceptionMessages = false);
+
+// Errores generados por ASP.NET en español. Los de las reglas de negocio se escriben en los controladores.
+builder.Services.AddProblemDetails(options =>
+    options.CustomizeProblemDetails = context =>
+    {
+        var problema = context.ProblemDetails;
+
+        problema.Title = problema.Status switch
+        {
+            StatusCodes.Status400BadRequest => "Los datos enviados no son válidos.",
+            StatusCodes.Status404NotFound => "No se encontró el recurso solicitado.",
+            StatusCodes.Status405MethodNotAllowed => "El método HTTP no está permitido en esta ruta.",
+            StatusCodes.Status415UnsupportedMediaType => "Tipo de contenido no admitido: use application/json.",
+            StatusCodes.Status500InternalServerError => "Ocurrió un error interno en el servidor.",
+            _ => problema.Title
+        };
+
+        // ASP.NET usa este texto fijo cuando el JSON está mal escrito o un valor no tiene el tipo esperado
+        if (problema is HttpValidationProblemDetails validacion)
+        {
+            foreach (var errores in validacion.Errors.Values)
+            {
+                for (var i = 0; i < errores.Length; i++)
+                {
+                    if (errores[i] == "The input was not valid.")
+                    {
+                        errores[i] = "El valor enviado no tiene el formato correcto.";
+                    }
+                }
+            }
+        }
+    });
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
@@ -30,6 +75,10 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+
+// Errores no controlados (500) y respuestas sin cuerpo (ruta inexistente, método no permitido) en JSON
+app.UseExceptionHandler();
+app.UseStatusCodePages();
 
 // Swagger queda visible también en la API publicada, no solo en Development
 app.MapOpenApi();
