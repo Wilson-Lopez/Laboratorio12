@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using TallerMecanico.Api.Data;
 
@@ -50,6 +51,11 @@ builder.Services.AddProblemDetails(options =>
             }
         }
     });
+
+// Por defecto OpenAPI declara los números como ["integer", "string"] y Swagger UI no valida ese tipo:
+// responde "Required field is not provided" aunque se escriba el id
+builder.Services.ConfigureHttpJsonOptions(options =>
+    options.SerializerOptions.NumberHandling = JsonNumberHandling.Strict);
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
