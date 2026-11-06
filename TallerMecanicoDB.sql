@@ -1,12 +1,15 @@
 ﻿-- TallerMecanicoDB: Clientes (1) -> (N) Vehiculos + datos de prueba
--- Local: sqlcmd -S .\SQLEXPRESS -E -f 65001 -i TallerMecanicoDB.sql   (crea la base y las tablas)
--- Nube:  conectarse a la base creada en el panel del proveedor        (solo crea las tablas)
--- Ejecutarlo de nuevo reinicia las tablas y sus datos.
-IF DB_NAME() = 'master' AND DB_ID('TallerMecanicoDB') IS NULL
-    CREATE DATABASE TallerMecanicoDB;
-GO
+-- Se ejecuta conectado a la base del taller (opción -d de sqlcmd). Ejecutarlo de nuevo reinicia las tablas y sus datos.
+-- Local: sqlcmd -S .\SQLEXPRESS -E -C -Q "CREATE DATABASE TallerMecanicoDB"   (solo la primera vez)
+--        sqlcmd -S .\SQLEXPRESS -E -C -f 65001 -d TallerMecanicoDB -i TallerMecanicoDB.sql
+-- Nube:  sqlcmd -S <servidor> -d <base> -U <usuario> -P '<clave>' -C -f 65001 -i TallerMecanicoDB.sql
+
+-- Si se ejecuta conectado a master, no crea nada: NOEXEC hace que el resto del script no se ejecute
 IF DB_NAME() = 'master'
-    USE TallerMecanicoDB;
+BEGIN
+    RAISERROR('Conéctate a la base del taller con la opción -d: el script no se ejecuta en master.', 16, 1);
+    SET NOEXEC ON;
+END
 GO
 
 DROP TABLE IF EXISTS Vehiculos;
@@ -52,4 +55,7 @@ GO
 SELECT 'Clientes' AS Tabla, COUNT(*) AS Filas FROM Clientes
 UNION ALL
 SELECT 'Vehiculos', COUNT(*) FROM Vehiculos;
+GO
+
+SET NOEXEC OFF;
 GO
